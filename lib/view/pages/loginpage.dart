@@ -1,24 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quizapp/view/pages/profile_page.dart';
+import 'package:flutter_quizapp/components/bottom_bar.dart';
+import 'package:flutter_quizapp/components/common_textfileds.dart';
 import 'package:flutter_quizapp/view_model/auth_vm.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_quizapp/view/pages/components/common_textfileds.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginPage extends ConsumerStatefulWidget {
-  const LoginPage({super.key});
+class LoginPage extends ConsumerWidget {
+  LoginPage({super.key});
+  Future<void> saveUsername(String username) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', username);
+  }
 
-  @override
-  ConsumerState<LoginPage> createState() => _LoginPageState();
-}
+  void login(BuildContext context, String username, String password,
+      WidgetRef ref) async {
+    if (username.isNotEmpty && password.isNotEmpty) {
+      await saveUsername(username);
+      ref.read(userViewModelProvider.notifier).setUsername(username);
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => const BottomBar(),
+      ));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        backgroundColor: Colors.red,
+        content: Text('Please fill in both fields'),
+      ));
+    }
+  }
 
-class _LoginPageState extends ConsumerState<LoginPage> {
   final passController = TextEditingController();
-  final namecontroller = TextEditingController();
+  final nameController = TextEditingController();
 
   @override
-  Widget build(BuildContext context) {
-    final userViewModel = ref.watch(userViewModelProvider);
-
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       body: SafeArea(
@@ -37,13 +51,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 style: TextStyle(color: Colors.blueGrey),
               ),
               const SizedBox(height: 20),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.all(18.0),
-                child: CommonTextField(labelText: 'Username'),
+                child: CommonTextField(
+                  labelText: 'Username',
+                  controller: nameController,
+                ),
               ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.all(18.0),
-                child: CommonTextField(labelText: 'Password'),
+                child: CommonTextField(
+                  labelText: 'Password',
+                  controller: passController,
+                ),
               ),
               const SizedBox(height: 20),
               const SizedBox(height: 10),
@@ -67,19 +87,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.black),
                         onPressed: () async {
-                          String username = namecontroller.text;
-                          String passwrd = passController.text;
-
-                          if (username.isNotEmpty &&
-                              
-                              passwrd.isNotEmpty) {
-                            await userViewModel
-                                .saveUsername(username); // Save username
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => ProfilePage()));
-                          }
-
-                    
+                          login(context, nameController.text.trim(),
+                              passController.text.trim(), ref);
                         },
                         child: const Text(
                           'Login',

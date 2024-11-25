@@ -20,9 +20,9 @@ class QuizViewModel extends ChangeNotifier {
   }
 
   Future<void> _insertAndFetchData() async {
-    await quizHelper.clearDatabase(); // Clear database before inserting new data
-    await quizHelper.insertSimpleQuestion(); // Insert sample questions
-    await _fetchRecord(); // Fetch the inserted records
+    await quizHelper.clearDatabase();
+    await quizHelper.insertSimpleQuestion();
+    await _fetchRecord();
   }
 
   Future<void> _fetchRecord() async {

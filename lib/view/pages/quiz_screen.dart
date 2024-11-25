@@ -1,7 +1,8 @@
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quizapp/riverpod/riverpod.dart';
-import 'package:flutter_quizapp/view_model/dashboard_vm.dart';
+import 'package:flutter_quizapp/components/questions_container.dart';
+import 'package:flutter_quizapp/view/pages/dashboardpage.dart';
 import 'package:flutter_quizapp/view_model/quiz_vm.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -48,39 +49,7 @@ class QuizScreen extends ConsumerWidget {
                         ),
                       ),
 
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
-                          height: 140,
-                          decoration: BoxDecoration(color: Colors.purple[500]),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Text(
-                                  'Question ${quizViewModel.currentQuestionIndex + 1}/${quizViewModel.list.length}',
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 20),
-                                Text(
-                                  quizViewModel
-                                      .list[quizViewModel.currentQuestionIndex]
-                                      .question,
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                      QuestionContainer(quizViewModel: quizViewModel),
 
                       const SizedBox(height: 30),
                       CircularCountDownTimer(
@@ -108,7 +77,7 @@ class QuizScreen extends ConsumerWidget {
                         onComplete: () {
                           debugPrint('Countdown Ended');
                           quizViewModel.nextQuestion();
-                          countDownController.start(); // Reset timer
+                          countDownController.start();
                         },
                       ),
                       const SizedBox(height: 20),
@@ -163,9 +132,8 @@ class QuizScreen extends ConsumerWidget {
     return InkWell(
       onTap: () {
         quizViewModel.checkAnswer(optionNumber);
-        controller.pause(); // Pause timer
+        controller.pause(); 
         Future.delayed(const Duration(seconds: 1), () {
-          // Navigate to the next question or show the result page
           if (quizViewModel.isLastQuestion()) {
             Navigator.push(
               context,
@@ -178,7 +146,7 @@ class QuizScreen extends ConsumerWidget {
             );
           } else {
             quizViewModel.nextQuestion();
-            controller.start(); // Reset timer for the next question
+            controller.start(); 
           }
         });
       },

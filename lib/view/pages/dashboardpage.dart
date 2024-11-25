@@ -1,110 +1,88 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_quizapp/components/common_button.dart';
 
-class PerformanceDashboardScreen extends StatelessWidget {
+class DashBoardPage extends StatelessWidget {
   final int totalQuestions;
-  final int answeredCount;
-  final int unansweredCount;
+  final int correctAnswers;
 
-  const PerformanceDashboardScreen({
-    Key? key,
-    required this.totalQuestions,
-    required this.answeredCount,
-    required this.unansweredCount,
-  }) : super(key: key);
+  const DashBoardPage(
+      {super.key, required this.totalQuestions, required this.correctAnswers});
 
   @override
   Widget build(BuildContext context) {
-    // Prevent issues if totalQuestions is 0
-    final validTotalQuestions = totalQuestions > 0 ? totalQuestions : 1;  // Ensure no zero value
-    final validAnsweredCount = answeredCount >= 0 ? answeredCount : 0; // Ensure non-negative values
-    final validUnansweredCount = unansweredCount >= 0 ? unansweredCount : 0;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Performance Dashboard'),
-        backgroundColor: Colors.blue,
+        title: const Text(
+          'Performance Summary',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Performance Summary
-            Text(
-              'Total Questions: $validTotalQuestions',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Answered: $validAnsweredCount',
-              style: const TextStyle(fontSize: 20, color: Colors.green),
-            ),
-            Text(
-              'Unanswered: $validUnansweredCount',
-              style: const TextStyle(fontSize: 20, color: Colors.red),
-            ),
             const SizedBox(height: 20),
-
-            // Bar chart visualization
-            const Text(
-              'Performance Visualization',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            _buildBarChart(validTotalQuestions, validAnsweredCount, validUnansweredCount),
-            const SizedBox(height: 20),
-
-            // Restart Button
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dashboard screen
-              },
-              child: const Text('Go Back to Quiz'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                textStyle: const TextStyle(fontSize: 18),
+            Expanded(
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.center,
+                  maxY: totalQuestions.toDouble(),
+                  barGroups: [
+                    BarChartGroupData(
+                      x: 1,
+                      barRods: [
+                        BarChartRodData(
+                          toY: correctAnswers.toDouble(),
+                          color: Colors.green,
+                          width: 20,
+                        ),
+                      ],
+                    ),
+                    BarChartGroupData(
+                      x: 2,
+                      barRods: [
+                        BarChartRodData(
+                          toY: (totalQuestions - correctAnswers).toDouble(),
+                          color: Colors.red,
+                          width: 20,
+                        ),
+                      ],
+                    ),
+                  ],
+                  titlesData: FlTitlesData(
+                    leftTitles: const AxisTitles(),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (double value, TitleMeta meta) {
+                          return Text(
+                            value == 1
+                                ? 'Correct           '
+                                : '              Incorrect',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.purple[500],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
+            const SizedBox(height: 20),
+            CommonButton(
+                color: Colors.purple[500],
+                text: 'Back',
+                textColor: Colors.white,
+                onTap: () {
+                  Navigator.pop(context);
+                })
           ],
         ),
-      ),
-    );
-  }
-
-  // Bar Chart to show Answered vs Unanswered
-  Widget _buildBarChart(int totalQuestions, int answeredCount, int unansweredCount) {
-    return BarChart(
-      BarChartData(
-        alignment: BarChartAlignment.spaceAround,
-        maxY: totalQuestions > 0 ? totalQuestions.toDouble() : 1.0,  // Prevent NaN or zero maxY
-        barGroups: [
-          BarChartGroupData(
-            x: 0,
-            barRods: [
-              BarChartRodData(
-                toY: answeredCount.toDouble(),
-                color: Colors.green,
-                width: 25,
-              ),
-            ],
-            showingTooltipIndicators: [0],
-          ),
-          BarChartGroupData(
-            x: 1,
-            barRods: [
-              BarChartRodData(
-                toY: unansweredCount.toDouble(),
-                color: Colors.red,
-                width: 25,
-              ),
-            ],
-            showingTooltipIndicators: [0],
-          ),
-        ],
-        titlesData: FlTitlesData(show: true),
-        borderData: FlBorderData(show: false),
-        gridData: FlGridData(show: false),
       ),
     );
   }

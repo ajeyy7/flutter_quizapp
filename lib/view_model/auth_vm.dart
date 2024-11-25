@@ -1,35 +1,27 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_quizapp/helper/quiz_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class UserViewModel extends ChangeNotifier {
-  final QuizHelper quizHelper;
-  String _username = '';
+class UserViewModel extends StateNotifier<String> {
+  UserViewModel() : super('');
 
-  String get username => _username;
-
-  UserViewModel(this.quizHelper);
-
-  // Load the username from the database
+  // Load the username from SharedPreferences
   Future<void> loadUsername() async {
-    String? storedUsername = await quizHelper.fetchUsername();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? storedUsername = prefs.getString('username');
     if (storedUsername != null) {
-      _username = storedUsername;
+      state = storedUsername;
     }
-    notifyListeners();
   }
 
-  // Save the username to the database
-  Future<void> saveUsername(String username) async {
-    bool isSaved = await quizHelper.insertUsername(username);
-    if (isSaved) {
-      _username = username;
-      notifyListeners();
-    }
+  // Save the username to SharedPreferences
+  Future<void> setUsername(String username) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', username);
+    state = username;
   }
 }
 
 // Define the provider for Riverpod
-final userViewModelProvider = ChangeNotifierProvider<UserViewModel>((ref) {
-  return UserViewModel(QuizHelper());
+final userViewModelProvider = StateNotifierProvider<UserViewModel, String>((ref) {
+  return UserViewModel();
 });
